@@ -89,23 +89,53 @@ def update_doctor(doctor_id):
     conn = None
     try:
         data = request.get_json()
-        if not data or "name" not in data or "dept_id" not in data:
-            return jsonify({"error": "name and dept_id are required"}), 400
+
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        fields = []
+        values = []
+
+        if "name" in data:
+            fields.append("doctor_name = %s")
+            values.append(data["name"])
+
+        if "specialization" in data:
+            fields.append("specialization = %s")
+            values.append(data["specialization"])
+
+        if "phone" in data:
+            fields.append("phoneno = %s")
+            values.append(data["phone"])
+
+        if "dept_id" in data:
+            fields.append("dept_id = %s")
+            values.append(data["dept_id"])
+
+        if not fields:
+            return jsonify({"error": "No fields to update"}), 400
+
+        values.append(doctor_id)
+
+        query = f"""
+            UPDATE staff_mgmt.doctor
+            SET {', '.join(fields)}
+            WHERE doctor_id = %s
+            RETURNING *;
+        """
 
         conn = get_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute(
-            """UPDATE staff_mgmt.doctor
-               SET name = %s, specialization = %s, phone = %s, dept_id = %s
-               WHERE doctor_id = %s RETURNING *;""",
-            (data["name"], data.get("specialization"), data.get("phone"), data["dept_id"], doctor_id)
-        )
+        cur.execute(query, tuple(values))
         updated = cur.fetchone()
         conn.commit()
         cur.close()
+
         if updated is None:
             return jsonify({"error": "Doctor not found"}), 404
+
         return jsonify(updated), 200
+
     except Exception as e:
         if conn:
             conn.rollback()
