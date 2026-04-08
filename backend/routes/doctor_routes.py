@@ -68,9 +68,16 @@ def create_doctor():
         conn = get_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute(
-            """INSERT INTO staff_mgmt.doctor (doctor_name, specialization, phoneno, dept_id)
-               VALUES (%s, %s, %s, %s) RETURNING *;""",
-            (data["name"], data.get("specialization"), data.get("phone"), data["dept_id"])
+            """INSERT INTO staff_mgmt.doctor 
+            (doctor_name, specialization, phoneno, dept_id, licenseno)
+            VALUES (%s, %s, %s, %s, %s) RETURNING *;""",
+            (
+                data["name"],
+                data.get("specialization"),
+                data.get("phone"),
+                data["dept_id"],
+                data.get("license_no")   # 👈 frontend key
+            )
         )
         new_doctor = cur.fetchone()
         conn.commit()
@@ -107,6 +114,10 @@ def update_doctor(doctor_id):
         if "phone" in data:
             fields.append("phoneno = %s")
             values.append(data["phone"])
+
+        if "license_no" in data:
+            fields.append("licenseno = %s")
+            values.append(data["license_no"])
 
         if "dept_id" in data:
             fields.append("dept_id = %s")
