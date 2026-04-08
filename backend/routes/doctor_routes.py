@@ -68,7 +68,7 @@ def create_doctor():
         conn = get_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute(
-            """INSERT INTO staff_mgmt.doctor (name, specialization, phone, dept_id)
+            """INSERT INTO staff_mgmt.doctor (doctor_name, specialization, phoneno, dept_id)
                VALUES (%s, %s, %s, %s) RETURNING *;""",
             (data["name"], data.get("specialization"), data.get("phone"), data["dept_id"])
         )
