@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { UserPlus, Trash2 } from 'lucide-react';
 import api from '../api/api';
 
 export default function Patients() {
@@ -17,27 +18,21 @@ export default function Patients() {
     }
   };
 
-  useEffect(() => { 
-    fetchPatients(); 
-  }, []);
+  useEffect(() => { fetchPatients(); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/patients', {
-        patient_name: formData.name,
-        phoneno: formData.phone
-      });
+      await api.post('/patients', formData);
       setFormData({ name: '', phone: '' });
       fetchPatients();
     } catch (err) {
-      alert("Error adding patient. Check console.");
-      console.error(err);
+      alert("Error adding patient.");
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("This will delete ALL related records. Continue?")) return;
+    if (!window.confirm("Delete patient?")) return;
     try {
       await api.delete(`/patients/${id}`);
       fetchPatients();
@@ -46,53 +41,58 @@ export default function Patients() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="loading-spinner">Loading Records...</div>;
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Patient Management</h1>
+    <div>
+      <h1 className="page-title">Patient Management</h1>
       
-      <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>
+      <form onSubmit={handleSubmit} className="modern-form">
         <input 
           required 
-          placeholder="Name" 
-          style={{ marginRight: '10px', padding: '5px' }}
+          placeholder="Patient Name" 
+          className="modern-input"
           value={formData.name} 
           onChange={e => setFormData({...formData, name: e.target.value})} 
         />
         <input 
-          placeholder="Phone" 
-          style={{ marginRight: '10px', padding: '5px' }}
+          placeholder="Contact Phone" 
+          className="modern-input"
           value={formData.phone} 
           onChange={e => setFormData({...formData, phone: e.target.value})} 
         />
-        <button type="submit" style={{ padding: '5px 10px' }}>Add Patient</button>
+        <button type="submit" className="btn btn-primary">
+          <UserPlus size={18} /> Add Record
+        </button>
       </form>
 
-      <table border="1" cellPadding="10" style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ background: '#f4f4f4' }}>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {patients.map(p => (
-            <tr key={p.patient_id}>
-              <td>{p.patient_id}</td>
-              <td>{p.patient_name}</td>
-              <td>{p.phoneno}</td>
-              <td>
-                <button onClick={() => handleDelete(p.patient_id)} style={{ color: 'red' }}>
-                  Delete
-                </button>
-              </td>
+      <div className="table-container">
+        <table className="modern-table">
+          <thead>
+            <tr>
+              <th>Reg ID</th>
+              <th>Full Name</th>
+              <th>Phone Number</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {patients.map(p => (
+              <tr key={p.patient_id}>
+                <td><span className="badge">#{p.patient_id}</span></td>
+                <td><strong>{p.patient_name}</strong></td>
+                <td>{p.phoneno}</td>
+                <td>
+                  <button onClick={() => handleDelete(p.patient_id)} className="btn btn-danger">
+                    <Trash2 size={16} /> Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {patients.length === 0 && <tr><td colSpan="4" className="empty-state">No records found.</td></tr>}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

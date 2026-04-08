@@ -1,4 +1,5 @@
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, NavLink } from 'react-router-dom';
+import { LayoutDashboard, Users, UserRound, CalendarCheck, Building2, Activity } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Patients from './pages/Patients';
 import Doctors from './pages/Doctors';
@@ -7,21 +8,34 @@ import Departments from './pages/Departments';
 
 function App() {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-      {/* Sidebar / Navbar */}
-      <aside style={{ width: '250px', background: '#f4f4f4', padding: '20px', borderRight: '1px solid #ccc' }}>
-        <h2>Hospital MS</h2>
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
-          <Link to="/" style={{ textDecoration: 'none', color: '#0066cc', fontWeight: 'bold' }}>Dashboard</Link>
-          <Link to="/patients" style={{ textDecoration: 'none', color: '#0066cc', fontWeight: 'bold' }}>Patients</Link>
-          <Link to="/doctors" style={{ textDecoration: 'none', color: '#0066cc', fontWeight: 'bold' }}>Doctors</Link>
-          <Link to="/appointments" style={{ textDecoration: 'none', color: '#0066cc', fontWeight: 'bold' }}>Appointments</Link>
-          <Link to="/departments" style={{ textDecoration: 'none', color: '#0066cc', fontWeight: 'bold' }}>Departments</Link>
+    <div className="app-container">
+      {/* Sidebar Navigation */}
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <Activity size={28} color="#3b82f6" />
+          <span>CareFlow</span>
+        </div>
+        <nav className="nav-links">
+          <NavLink to="/" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+            <LayoutDashboard size={20} /> Dashboard
+          </NavLink>
+          <NavLink to="/patients" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+            <Users size={20} /> Patients
+          </NavLink>
+          <NavLink to="/doctors" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+            <UserRound size={20} /> Doctors
+          </NavLink>
+          <NavLink to="/appointments" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+            <CalendarCheck size={20} /> Appointments
+          </NavLink>
+          <NavLink to="/departments" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+            <Building2 size={20} /> Departments
+          </NavLink>
         </nav>
       </aside>
       
-      {/* Main Content routing */}
-      <main style={{ flex: 1, overflowY: 'auto' }}>
+      {/* Main Content */}
+      <main className="main-content">
         <Routes>
            <Route path="/" element={<Dashboard />} />
            <Route path="/patients" element={<Patients />} />

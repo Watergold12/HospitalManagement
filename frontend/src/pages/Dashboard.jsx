@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Stethoscope, Users, CreditCard, Building } from 'lucide-react';
 import api from '../api/api';
 
 export default function Dashboard() {
@@ -30,91 +31,111 @@ export default function Dashboard() {
     fetchAnalytics();
   }, []);
 
-  if (loading) return <div>Loading dashboard...</div>;
+  if (loading) return <div className="loading-spinner">Syncing Metrics...</div>;
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1 style={{ marginBottom: '20px' }}>Analytics Dashboard</h1>
+    <div>
+      <h1 className="page-title">Analytics Overview</h1>
       
-      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+      <div className="dashboard-grid">
         
         {/* Room Occupancy Card */}
         {rooms && (
-          <div style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', minWidth: '250px' }}>
-            <h3>Room Occupancy</h3>
-            <p><strong>Total Rooms:</strong> {rooms.total_rooms}</p>
-            <p><strong>Occupied:</strong> {rooms.occupied_rooms}</p>
-            <p><strong>Available:</strong> {rooms.available_rooms}</p>
+          <div className="glass-card">
+            <h3><Building size={20} /> Live Room Status</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div className="stat-value">{rooms.occupied_rooms}</div>
+                <div style={{ color: 'var(--text-sub)' }}>Occupied Rooms</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{rooms.available_rooms}</div>
+                <div style={{ color: 'var(--accent)' }}>Available</div>
+              </div>
+            </div>
+            <div style={{ marginTop: '1rem', width: '100%', height: '8px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px' }}>
+              <div style={{ width: `${(rooms.occupied_rooms / rooms.total_rooms) * 100}%`, height: '100%', background: 'var(--gradient)', borderRadius: '4px' }}></div>
+            </div>
           </div>
         )}
 
+        {/* Patients Per Department */}
+        <div className="glass-card">
+          <h3><Users size={20} /> Department Load</h3>
+          <div className="table-container">
+            <table className="modern-table">
+              <thead>
+                <tr>
+                  <th>Department</th>
+                  <th>Patients Active</th>
+                </tr>
+              </thead>
+              <tbody>
+                {deptPatients.map((d, i) => (
+                  <tr key={i}>
+                    <td><strong>{d.dept_name}</strong></td>
+                    <td><span className="badge">{d.total_patients}</span></td>
+                  </tr>
+                ))}
+                {deptPatients.length === 0 && <tr><td colSpan="2" className="empty-state">No data available</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         {/* Appointments per doctor */}
-        <div style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', flex: '1 1 300px' }}>
-          <h3>Appointments per Doctor</h3>
-          <table border="1" cellPadding="5" style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-            <thead>
-              <tr style={{ background: '#f4f4f4' }}>
-                <th>Doctor</th>
-                <th>Appointments</th>
-              </tr>
-            </thead>
-            <tbody>
-              {docAppt.map((d, i) => (
-                <tr key={i}>
-                  <td>{d.doctor_name}</td>
-                  <td>{d.total_appointments}</td>
+        <div className="glass-card">
+          <h3><Stethoscope size={20} /> Doctor Schedules</h3>
+          <div className="table-container">
+            <table className="modern-table">
+              <thead>
+                <tr>
+                  <th>Doctor</th>
+                  <th>Appointments</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {docAppt.map((d, i) => (
+                  <tr key={i}>
+                    <td><strong>{d.doctor_name}</strong></td>
+                    <td><span className="badge">{d.total_appointments}</span></td>
+                  </tr>
+                ))}
+                {docAppt.length === 0 && <tr><td colSpan="2" className="empty-state">No data available</td></tr>}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        {/* Patients per department */}
-        <div style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', flex: '1 1 300px' }}>
-          <h3>Patients per Department</h3>
-          <table border="1" cellPadding="5" style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-            <thead>
-              <tr style={{ background: '#f4f4f4' }}>
-                <th>Department</th>
-                <th>Patients</th>
-              </tr>
-            </thead>
-            <tbody>
-              {deptPatients.map((d, i) => (
-                <tr key={i}>
-                  <td>{d.dept_name}</td>
-                  <td>{d.total_patients}</td>
+        {/* Billing */}
+        <div className="glass-card" style={{ gridColumn: '1 / -1' }}>
+          <h3><CreditCard size={20} /> Financial Ledger</h3>
+          <div className="table-container">
+            <table className="modern-table">
+              <thead>
+                <tr>
+                  <th>Patient Name</th>
+                  <th>Total Service Cost</th>
+                  <th>Total Paid</th>
+                  <th>Balance Ledger</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {billing.map((b, i) => (
+                  <tr key={i}>
+                    <td><strong>{b.patient_name}</strong></td>
+                    <td>${b.total_service_cost}</td>
+                    <td style={{ color: 'var(--accent)' }}>${b.total_paid}</td>
+                    <td style={{ color: b.balance > 0 ? 'var(--danger)' : 'green', fontWeight: 700}}>
+                      {b.balance > 0 ? `-$${b.balance}` : `$0`}
+                    </td>
+                  </tr>
+                ))}
+                {billing.length === 0 && <tr><td colSpan="4" className="empty-state">No data available</td></tr>}
+              </tbody>
+            </table>
+          </div>
         </div>
-
-        {/* Billing per Patient */}
-        <div style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', flex: '1 1 100%' }}>
-          <h3>Billing Overview</h3>
-          <table border="1" cellPadding="5" style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-            <thead>
-              <tr style={{ background: '#f4f4f4' }}>
-                <th>Patient Name</th>
-                <th>Total Service Cost</th>
-                <th>Total Paid</th>
-                <th>Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {billing.map((b, i) => (
-                <tr key={i}>
-                  <td>{b.patient_name}</td>
-                  <td>${b.total_service_cost}</td>
-                  <td>${b.total_paid}</td>
-                  <td style={{ color: b.balance > 0 ? 'red' : 'green'}}>${b.balance}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
       </div>
     </div>
   );
