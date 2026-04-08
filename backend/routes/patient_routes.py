@@ -50,13 +50,30 @@ def create():
     try:
         data = request.get_json()
         if not data: return jsonify({"error": "No data provided"}), 400
-        keys = [k for k in data.keys() if k.isidentifier()]
-        cols = ", ".join(keys)
-        vals = ", ".join(["%s"] * len(keys))
+        # mapping frontend → database
+        field_map = {
+            "name": "patient_name",
+            "phone": "phoneno",
+            # add more if needed
+        }
+
+        cols_list = []
+        values = []
+
+        for key in data:
+            if key in field_map:
+                cols_list.append(field_map[key])
+                values.append(data[key])
+
+        cols = ", ".join(cols_list)
+        vals = ", ".join(["%s"] * len(cols_list))
         
         conn = get_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute(f"INSERT INTO patient_mgmt.patient ({cols}) VALUES ({vals}) RETURNING *;", [data[k] for k in keys])
+        cur.execute(
+            f"INSERT INTO patient_mgmt.patient ({cols}) VALUES ({vals}) RETURNING *;",
+            values
+        )
         obj = cur.fetchone()
         conn.commit()
         cur.close()
